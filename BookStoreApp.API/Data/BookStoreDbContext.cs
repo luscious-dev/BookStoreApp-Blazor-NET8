@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+//using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookStoreApp.API.Data;
 
-public partial class BookStoreDbContext : DbContext
+public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser>
 {
     public BookStoreDbContext()
     {
@@ -25,6 +28,8 @@ public partial class BookStoreDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Author>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__tmp_ms_x__3214EC07E01B59C5");
@@ -52,6 +57,61 @@ public partial class BookStoreDbContext : DbContext
                 .HasForeignKey(d => d.AuthorId)
                 .HasConstraintName("FK_Books_ToTable");
         });
+
+        modelBuilder.Entity<IdentityRole>().HasData(
+             new IdentityRole
+             {
+                 Name = "User",
+                 NormalizedName = "USER",
+                 Id = "0dd3acea-ed65-4ec9-812b-02183cf1d78b"
+			 },
+			 new IdentityRole
+			 {
+				 Name = "Administrator",
+				 NormalizedName = "ADMINISTRATOR",
+				 Id = "0fdc670e-7bed-4e65-9ba6-4fae8f194bfe"
+			 }
+			);
+
+        var hasher = new PasswordHasher<ApplicationUser>();
+
+        modelBuilder.Entity<ApplicationUser>().HasData(
+                new ApplicationUser
+                {
+                    Id = "0abcc174-052e-4776-b72d-03b9c5f8cdb4",
+                    Email = "admin@bookstore.com",
+                    NormalizedEmail = "ADMIN@BOOKSTORE.COM",
+                    UserName = "admin@bookstore.com",
+                    NormalizedUserName = "ADMIN@BOOKSTORE.COM",
+                    FirstName = "System",
+                    LastName = "Admin",
+                    PasswordHash = hasher.HashPassword(null, "P@ssword")
+                },
+				new ApplicationUser
+				{
+					Id = "fe774faf-01ed-4fa3-9f7a-0a5b3685f2a4",
+					Email = "user@bookstore.com",
+					NormalizedEmail = "USER@BOOKSTORE.COM",
+					UserName = "user@bookstore.com",
+					NormalizedUserName = "USER@BOOKSTORE.COM",
+					FirstName = "Boobo",
+					LastName = "Yoo",
+					PasswordHash = hasher.HashPassword(null, "P@ssword")
+				}
+			);
+
+        modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string>
+                {
+                    RoleId = "0fdc670e-7bed-4e65-9ba6-4fae8f194bfe",
+                    UserId = "0abcc174-052e-4776-b72d-03b9c5f8cdb4"
+                },
+				new IdentityUserRole<string>
+				{
+					RoleId = "0dd3acea-ed65-4ec9-812b-02183cf1d78b",
+					UserId = "fe774faf-01ed-4fa3-9f7a-0a5b3685f2a4"
+				}
+			);
 
         OnModelCreatingPartial(modelBuilder);
     }
